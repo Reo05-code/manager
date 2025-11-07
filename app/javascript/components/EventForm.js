@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
-import { isEmptyObject, validateEvent } from '../helpers/helpers';
+import React, { useState, useRef, useEffect } from 'react';
+import PropTypes from 'prop-types';
+import Pikaday from 'pikaday';
+import 'pikaday/css/pikaday.css';
+import { formatDate, isEmptyObject, validateEvent } from '../helpers/helpers';
 
-const EventForm = () => {
+const EventForm = ({ onSave }) => {
   const [event, setEvent] = useState({
     event_type: '',
     event_date: '',
@@ -13,14 +16,40 @@ const EventForm = () => {
 
   const [formErrors, setFormErrors] = useState({});
 
+  // 1. Pikadayが参照するDOM要素を保持するためにuseRefを追加
+  const dateInput = useRef(null);
+
+  // 2. useEffectのコールバック内で古いstateを参照しないための中間関数
+  const updateEvent = (key, value) => {
+    setEvent((prevEvent) => ({ ...prevEvent, [key]: value }));
+  };
+
+  // 3. Pikadayを初期化するためにuseEffectを追加
+  useEffect(() => {
+    const p = new Pikaday({
+      field: dateInput.current, // input要素をPikadayに渡す
+      onSelect: (date) => {
+        // 日付が選択されたときの処理
+        const formattedDate = formatDate(date);
+        dateInput.current.value = formattedDate; // inputの表示値を手動で更新
+        updateEvent('event_date', formattedDate); // Reactのstateを更新
+      },
+    });
+
+    // クリーンアップ関数: コンポーネントが破棄される時にPikadayも破棄する
+    return () => p.destroy();
+  }, []); // 空の配列を渡して、初回マウント時にのみ実行する
+
+  // 4. setEvent(...) を updateEvent(...) に変更
   const handleInputChange = (e) => {
     const { target } = e;
     const { name } = target;
     const value = target.type === 'checkbox' ? target.checked : target.value;
 
-    setEvent({ ...event, [name]: value });
+    updateEvent(name, value);
   };
 
+  // (renderErrors は変更なし)
   const renderErrors = () => {
     if (isEmptyObject(formErrors)) {
       return null;
@@ -38,6 +67,7 @@ const EventForm = () => {
     );
   };
 
+  // (handleSubmit は変更なし)
   const handleSubmit = (e) => {
     e.preventDefault();
     const errors = validateEvent(event);
@@ -45,7 +75,7 @@ const EventForm = () => {
     if (!isEmptyObject(errors)) {
       setFormErrors(errors);
     } else {
-      console.log(event);
+      onSave(event);
     }
   };
 
@@ -66,6 +96,8 @@ const EventForm = () => {
             />
           </label>
         </div>
+
+        {/* 5. 日付入力欄をPikaday用に変更 */}
         <div>
           <label htmlFor="event_date">
             <strong>Date:</strong>
@@ -73,10 +105,14 @@ const EventForm = () => {
               type="text"
               id="event_date"
               name="event_date"
-              onChange={handleInputChange}
+              ref={dateInput} // 1. で定義したrefを紐付け
+              autoComplete="off" // ブラウザのサジェストを無効化
+              // onChange={handleInputChange} は削除
+              // (PikadayのonSelectがこのフィールドの更新を担当するため)
             />
           </label>
         </div>
+
         <div>
           <label htmlFor="title">
             <strong>Title:</strong>
@@ -131,3 +167,6 @@ const EventForm = () => {
 };
 
 export default EventForm;
+EventForm.propTypes = {
+  onSave: PropTypes.func.isRequired,
+};

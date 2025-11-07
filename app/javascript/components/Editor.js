@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useNavigate } from 'react-router-dom';
 import Header from './Header';
 import EventList from './EventList';
 import EventDetails from './Event';
@@ -9,6 +9,7 @@ const Editor = () => {
   const [events, setEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -28,6 +29,35 @@ const Editor = () => {
     fetchData();
   }, []);
 
+  const addEvent = async (newEvent) => {
+    try {
+      // (1) APIを叩いてDBに保存
+      const response = await window.fetch('/api/events', {
+        method: 'POST', // POSTメソッドで「作成」を依頼
+        body: JSON.stringify(newEvent), // フォームのデータをJSON文字列にする
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      // (2) DBが保存したデータを返してもらう
+      const savedEvent = await response.json();
+
+      // (3) Reactの「記憶(state)」を更新
+      const newEvents = [...events, savedEvent];
+      setEvents(newEvents);
+
+      // (4) ユーザーにお知らせ
+      window.alert('Event Added!');
+
+      // (5) 作成したイベントの詳細ページに強制ジャンプ！
+      navigate(`/events/${savedEvent.id}`);
+
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
   <>
     <Header />
@@ -40,9 +70,9 @@ const Editor = () => {
           <EventList events={events} />
 
           <Routes>
-            <Route path="new" element={<EventForm />} />
-            <Route path=":id" element={<EventDetails events={events} />} />
-          </Routes>
+          <Route path="new" element={<EventForm onSave={addEvent} />} />
+          <Route path=":id" element={<EventDetails events={events} />} />
+        </Routes>
         </>
       )}
     </div>
