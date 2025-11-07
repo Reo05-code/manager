@@ -28,11 +28,12 @@ const Editor = () => {
   }, []);
 
   return (
-    <>
-      <Header />
+  <>
+    <Header />
+    <div className="grid">
       {isError && <p>Something went wrong. Check the console.</p>}
       {isLoading ? (
-        <p>Loading...</p>
+        <p className='loading'>Loading...</p>
       ) : (
         <>
           <EventList events={events} />
@@ -42,8 +43,9 @@ const Editor = () => {
           </Routes>
         </>
       )}
-    </>
-  );
+    </div>
+  </>
+);
 };
 
 export default Editor;

@@ -7,17 +7,17 @@ const EventList = ({ events }) => {
     .sort((a, b) => new Date(b.event_date) - new Date(a.event_date))
     .map((event) => (
       <li key={event.id}>
-        <Link to={`/events/${event.id}`}>
+        <NavLink to={`/events/${event.id}`}>
           {event.event_date}
           {' '}
           -
           {event.event_type}
-        </Link>
+        </NavLink>
       </li>
     ));
 
   return (
-    <section>
+    <section className="eventList">
       <h2>Events</h2>
       <ul>{renderEvents(events)}</ul>
     </section>
