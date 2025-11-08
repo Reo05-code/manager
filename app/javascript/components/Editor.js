@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
+import { success } from '../helpers/notifications';
 import Header from './Header';
 import EventList from './EventList';
 import EventDetails from './Event';
 import EventForm from './EventForm';
+import { handleAjaxError } from '../helpers/helpers';
 
 const Editor = () => {
   const [events, setEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isError, setIsError] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -19,8 +20,7 @@ const Editor = () => {
         const data = await response.json();
         setEvents(data);
       } catch (error) {
-        setIsError(true);
-        console.error(error);
+        handleAjaxError(error);
       }
 
       setIsLoading(false);
@@ -48,12 +48,12 @@ const Editor = () => {
       setEvents(newEvents);
 
       // (4) ユーザーにお知らせ
-      window.alert('Event Added!');
+      success('Event Added!');
 
       // (5) 作成したイベントの詳細ページに強制ジャンプ！
       navigate(`/events/${savedEvent.id}`);
     } catch (error) {
-      console.error(error);
+      handleAjaxError(error);
     }
   };
 
@@ -68,11 +68,11 @@ const Editor = () => {
 
         if (!response.ok) throw Error(response.statusText);
 
-        window.alert('Event Deleted!');
+        success('Event Deleted!');
         navigate('/events');
         setEvents(events.filter((event) => event.id !== eventId));
       } catch (error) {
-        console.error(error);
+        handleAjaxError(error);
       }
     }
   };
@@ -81,7 +81,6 @@ const Editor = () => {
     <>
       <Header />
       <div className="grid">
-        {isError && <p>Something went wrong. Check the console.</p>}
         {isLoading ? (
           <p className="loading">Loading...</p>
         ) : (
