@@ -52,7 +52,6 @@ const Editor = () => {
 
       // (5) 作成したイベントの詳細ページに強制ジャンプ！
       navigate(`/events/${savedEvent.id}`);
-
     } catch (error) {
       console.error(error);
     }
@@ -71,7 +70,7 @@ const Editor = () => {
 
         window.alert('Event Deleted!');
         navigate('/events');
-        setEvents(events.filter(event => event.id !== eventId));
+        setEvents(events.filter((event) => event.id !== eventId));
       } catch (error) {
         console.error(error);
       }
@@ -79,25 +78,24 @@ const Editor = () => {
   };
 
   return (
-  <>
-    <Header />
-    <div className="grid">
-      {isError && <p>Something went wrong. Check the console.</p>}
-      {isLoading ? (
-        <p className='loading'>Loading...</p>
-      ) : (
-        <>
-          <EventList events={events} />
-
-          <Routes>
-          <Route path="new" element={<EventForm onSave={addEvent} />} />
-          <Route path=":id" element={<EventDetails events={events} onDelete={deleteEvent} />} />
-        </Routes>
-        </>
-      )}
-    </div>
-  </>
-);
+    <>
+      <Header />
+      <div className="grid">
+        {isError && <p>Something went wrong. Check the console.</p>}
+        {isLoading ? (
+          <p className="loading">Loading...</p>
+        ) : (
+          <>
+            <EventList events={events} />
+            <Routes>
+              <Route path="new" element={<EventForm onSave={addEvent} />} />
+              <Route path=":id" element={<EventDetails events={events} onDelete={deleteEvent} />} />
+            </Routes>
+          </>
+        )}
+      </div>
+    </>
+  );
 };
 
 export default Editor;
